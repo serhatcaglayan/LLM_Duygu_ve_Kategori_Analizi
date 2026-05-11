@@ -5,16 +5,16 @@ Model     : dbmdz/bert-base-turkish-cased (BERTurk)
 Sınıflar  : pozitif, negatif, nötr
 """
 
-import os
+import os 
 import numpy as np
 from datasets import load_dataset, Dataset, DatasetDict
 from transformers import (
-    AutoTokenizer,
-    AutoModelForSequenceClassification,
-    TrainingArguments,
-    Trainer,
-    DataCollatorWithPadding,
-    EarlyStoppingCallback,
+    AutoTokenizer, # tokenizasyon yapar
+    AutoModelForSequenceClassification, # sınıflandırma yapar
+    TrainingArguments, # eğitim argümanlarını ayarlar
+    Trainer, # modeli eğitir
+    DataCollatorWithPadding, # padding yapar [PAD]
+    EarlyStoppingCallback, # erken durdurma callback
 )
 from utils import (
     clean_text, compute_metrics, plot_confusion_matrix,
@@ -26,11 +26,11 @@ BASE_MODEL    = "dbmdz/bert-base-turkish-cased"
 DATASET_NAME  = "winvoker/turkish-sentiment-analysis-dataset"
 MODEL_SAVE    = "models/sentiment_model"
 DATA_SAVE     = "data/sentiment"
-MAX_LENGTH    = 128   
-BATCH_SIZE    = 8   
-NUM_EPOCHS    = 3
-LEARNING_RATE = 2e-5
-SEED          = 42
+MAX_LENGTH    = 128  # token sayisi
+BATCH_SIZE    = 8    # paket büyüklüğü 
+NUM_EPOCHS    = 3    # tur sayısı , model veriyi kaç kere görecek
+LEARNING_RATE = 2e-5 # öğrenme oranı , model türkçe sayı küçük
+SEED          = 42   # rastgelelik tohumu
 
 SENTIMENT_LABELS = ["negatif", "nötr", "pozitif"]  
 
@@ -55,64 +55,6 @@ def normalize_label(raw) -> str:
     s = str(raw).strip().lower()
     return LABEL_NORMALIZE_MAP.get(s, "nötr")   # bilinmeyen -> nötr
 
-
-# ── Demo veri seti ────────────────────────────────────────────
-def _create_demo_dataset():
-    import random
-    random.seed(SEED)
-    samples = {
-        "pozitif": [
-            "Bu haber gerçekten sevindirici, harika bir gelişme!",
-            "Ülkemiz için çok olumlu bir adım atıldı.",
-            "Ekonomideki bu iyileşme herkese umut veriyor.",
-            "Sporcularımız başarıyla temsil etti, gurur duyduk.",
-            "Yeni proje bölgeye büyük katkı sağlayacak.",
-            "Haberler oldukça cesaret verici ve umut verici.",
-            "Dünya genelinde olumlu bir adım olarak değerlendirildi.",
-            "İnsanlar bu gelişmeden memnuniyet duydu.",
-            "Çok başarılı bir performans sergilendi.",
-            "Bu sonuç herkesi mutlu etti.",
-        ],
-        "negatif": [
-            "Bu durum son derece endişe verici ve üzücü.",
-            "Ekonomideki kötüye gidiş devam ediyor.",
-            "Felaket boyutlarına ulaşan kriz çözüm bekliyor.",
-            "Halk bu karar karşısında büyük hayal kırıklığı yaşadı.",
-            "Yükselen fiyatlar vatandaşı bunaltıyor.",
-            "Olumsuz haber toplumu şoke etti.",
-            "Çatışmalar masum sivilleri etkiliyor.",
-            "Rakamlar son yılların en kötüsünü gösteriyor.",
-            "Bu hata telafisi çok zor bir sonuç doğurdu.",
-            "Kötü yönetim krizi derinleştiriyor.",
-        ],
-        "nötr": [
-            "Bakanlar bugün bir toplantı düzenledi.",
-            "Yeni yasa mecliste kabul edildi.",
-            "Hava durumu yarın bulutlu olacak.",
-            "Şirket üçüncü çeyrek sonuçlarını açıkladı.",
-            "Seçimler belirlenen tarihte yapılacak.",
-            "Araştırma sonuçları akademik dergide yayımlandı.",
-            "Toplantı saat üçte başlayacak.",
-            "Komite raporunu ilgili makamlara iletti.",
-            "Uluslararası konferans bu hafta gerçekleşti.",
-            "Resmi açıklama yarın yapılacak.",
-        ],
-    }
-    rows = {"text": [], "label": []}
-    for lbl, texts in samples.items():
-        for _ in range(80):
-            import random
-            rows["text"].append(random.choice(texts))
-            rows["label"].append(lbl)
-    indices = list(range(len(rows["text"])))
-    random.shuffle(indices)
-    rows["text"]  = [rows["text"][i] for i in indices]
-    rows["label"] = [rows["label"][i] for i in indices]
-    full  = Dataset.from_dict(rows)
-    split = full.train_test_split(test_size=0.2, seed=SEED)
-    return DatasetDict({"train": split["train"], "test": split["test"]})
-
-
 # ── Sütun algılama ────────────────────────────────────────────
 def _detect_column(sample, candidates):
     for col in candidates:
@@ -135,24 +77,19 @@ def main():
 
     # 1. Veri yükleme
     print("\n[1/6] Veri seti yükleniyor...")
-    try:
-        dataset = load_dataset(DATASET_NAME)
-        print(f"    OK Yüklendi: {DATASET_NAME}")
-        
-        # Egitimi hizlandirmak icin veri setini %10 oranina kucult
-        print("    Veri seti kucultuluyor (%10)...")
-        import random
-        for split in dataset.keys():
-            size = len(dataset[split])
-            subset_size = int(size * 0.1)
-            indices = list(range(size))
-            random.shuffle(indices)
-            dataset[split] = dataset[split].select(indices[:subset_size])
-        print(f"    Yeni egitim ornek sayisi: {len(dataset['train'])}")
-    except Exception as e:
-        print(f"    FAIL Yüklenemedi: {e}")
-        print("    Demo veri seti kullanılıyor...")
-        dataset = _create_demo_dataset()
+    dataset = load_dataset(DATASET_NAME)
+    print(f"    OK Yüklendi: {DATASET_NAME}")
+    
+    # Egitimi hizlandirmak icin veri setini %10 oranina kucult
+    print("    Veri seti kucultuluyor (%10)...")
+    import random
+    for split in dataset.keys():
+        size = len(dataset[split])
+        subset_size = int(size * 0.1)
+        indices = list(range(size))
+        random.shuffle(indices)
+        dataset[split] = dataset[split].select(indices[:subset_size])
+    print(f"    Yeni egitim ornek sayisi: {len(dataset['train'])}")
 
     # 2. Ön işleme
     print("\n[2/6] Ön işleme ve etiket normalizasyonu...")

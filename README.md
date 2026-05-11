@@ -57,8 +57,6 @@ python train_sentiment.py
 - Model kaydedilir: `models/sentiment_model/`
 - Raporlar: `data/sentiment/`
 
-> **Veri seti erişimi yoksa:** Her iki script de otomatik olarak dahili demo veri seti oluşturur ve eğitimi tamamlar.
-
 > **Disk Alanı Uyarısı:** Eğitim tamamlandıktan sonra `models/topic_model/` ve `models/sentiment_model/` klasörleri içerisinde oluşan `checkpoint-*` isimli klasörler (her biri ~1.2 GB) yalnızca eğitimi kaldığı yerden devam ettirmek için yedek amaçlıdır. Projeyi (uygulamayı) çalıştırmak için bu dosyalara ihtiyaç yoktur ve disk alanından tasarruf etmek için güvenle silinebilirler.
 
 ---

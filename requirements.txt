@@ -9,3 +9,24 @@ accelerate==0.29.3
 streamlit==1.33.0
 pandas==2.2.2
 numpy==1.26.4
+
+# --- KÜTÜPHANE AÇIKLAMALARI ---
+#
+# [Yapay Zeka ve Derin Öğrenme Altyapısı]
+# torch: Modelin matematiksel ve GPU hesaplamalarını yapan ana motor
+# transformers: HuggingFace NLP modellerini (BERTurk) kullanmamızı sağlayan kütüphane
+# datasets: HuggingFace veri setlerini hızlıca indirip işlemeyi sağlar
+# accelerate: Model eğitimini hızlandırır, bellek ve GPU yönetimini optimize eder
+#
+# [Web Arayüzü - Frontend]
+# streamlit: Modern web arayüzünü (UI) oluşturan kütüphane
+#
+# [Veri İşleme ve Matematik]
+# numpy: Hızlı matematiksel işlemler ve dizi (array) operasyonları
+# pandas: Verileri tablo formatında düzenleme ve yönetme
+#
+# [Ölçüm, Başarı Raporlama ve Görselleştirme]
+# evaluate: Model başarı metriklerini (Accuracy vb.) standartlara göre puanlar
+# scikit-learn: F1-score vb. detaylı makine öğrenmesi metriklerini hesaplar
+# matplotlib: Başarı raporlarını çizelgelere ve grafiklere dönüştürür
+# seaborn: Confusion Matrix gibi görsel renkli tabloları çizer

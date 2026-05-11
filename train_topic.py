@@ -35,51 +35,6 @@ os.makedirs(MODEL_SAVE, exist_ok=True)
 os.makedirs(DATA_SAVE,  exist_ok=True)
 
 
-# ── Demo veri seti (gerçek dataset yüklenemezse kullanılır) ──
-def _create_demo_dataset():
-    import random
-    random.seed(SEED)
-    templates = {
-        "Ekonomi":   ["Borsa bugün yüzde {n} düştü.", "Merkez Bankası faiz kararını açıkladı.",
-                      "Dolar/TL kuru {n} seviyesini gördü.", "Enflasyon rakamları açıklandı.",
-                      "İhracat geçen yıla göre yüzde {n} arttı."],
-        "Spor":      ["Galatasaray kupayı kazandı.", "Milli takım hazırlık maçında berabere kaldı.",
-                      "Fenerbahçe {n} milyon euroya transfer yaptı.", "Beşiktaş ligde lider durumda.",
-                      "Trabzonspor deplasmanda mağlup oldu."],
-        "Siyaset":   ["Cumhurbaşkanı önemli açıklama yaptı.", "Meclis gündeminde kritik tasarı var.",
-                      "Muhalefet partisi basın toplantısı düzenledi.", "Seçim takvimi için adımlar atıldı.",
-                      "Kabine değişikliği söylentileri gündemde."],
-        "Teknoloji": ["Yeni akıllı telefon modeli tanıtıldı.", "Yapay zekada önemli gelişme yaşandı.",
-                      "Sosyal medya platformu yeni özellikler ekledi.", "Siber güvenlik açığı tespit edildi.",
-                      "Elektrikli araç satışları rekor kırdı."],
-        "Sağlık":    ["Yeni aşı çalışması sonuçları açıklandı.", "Sağlık Bakanlığı uyarıda bulundu.",
-                      "Kanser tedavisinde yeni yöntem geliştirildi.", "Hastane kapasitesi artırıldı.",
-                      "Grip salgını önlemleri güncellendi."],
-        "Kültür":    ["Film festivali bugün başladı.", "Yeni kitap fuarı kapılarını açtı.",
-                      "Tiyatro sezonu perdelerini kaldırıyor.", "Müzede yeni sergi düzenlendi.",
-                      "Uluslararası müzik albümü büyük ilgi gördü."],
-        "Dünya":     ["BM'den kritik açıklama geldi.", "Rusya-Ukrayna cephesinde yeni gelişme.",
-                      "ABD Başkanı diplomatik ziyaret gerçekleştirdi.", "Avrupa'da iklim zirvesi yapıldı.",
-                      "Orta Doğu'da barış görüşmeleri sürüyor."],
-        "Eğitim":    ["Üniversite sınavı takvimi açıklandı.", "Burs başvuruları başladı.",
-                      "Okullarda yeni dönem hazırlıkları başladı.", "Yeni müfredat duyuruldu.",
-                      "Yükseköğretimde kapasite artırıldı."],
-    }
-    rows = {"text": [], "label_text": []}
-    for cat, sentences in templates.items():
-        for _ in range(100):
-            import random
-            tmpl = random.choice(sentences)
-            text = tmpl.format(n=random.randint(1, 99), m=random.randint(0, 5))
-            rows["text"].append(text)
-            rows["label_text"].append(cat)
-    indices = list(range(len(rows["text"])))
-    random.shuffle(indices)
-    rows["text"]       = [rows["text"][i] for i in indices]
-    rows["label_text"] = [rows["label_text"][i] for i in indices]
-    full = Dataset.from_dict(rows)
-    split = full.train_test_split(test_size=0.2, seed=SEED)
-    return DatasetDict({"train": split["train"], "test": split["test"]})
 
 
 # ── Sütun algılama ────────────────────────────────────────────
@@ -101,18 +56,13 @@ def main():
 
     # 1. Veri yükleme
     print("\n[1/6] Veri seti yükleniyor...")
-    try:
-        dataset = load_dataset(DATASET_NAME)
-        print(f"    Yuklendi: {DATASET_NAME}")
-        # ttc4900 sadece 'train' split iceriyor — manuel bol
-        if "test" not in dataset:
-            split = dataset["train"].train_test_split(test_size=0.2, seed=SEED)
-            dataset = DatasetDict({"train": split["train"], "test": split["test"]})
-            print(f"    Train/test bölündü: {len(dataset['train'])} / {len(dataset['test'])}")
-    except Exception as e:
-        print(f"    FAIL Yüklenemedi: {e}")
-        print("    Demo veri seti kullanılıyor...")
-        dataset = _create_demo_dataset()
+    dataset = load_dataset(DATASET_NAME)
+    print(f"    Yuklendi: {DATASET_NAME}")
+    # ttc4900 sadece 'train' split iceriyor — manuel bol
+    if "test" not in dataset:
+        split = dataset["train"].train_test_split(test_size=0.2, seed=SEED)
+        dataset = DatasetDict({"train": split["train"], "test": split["test"]})
+        print(f"    Train/test bölündü: {len(dataset['train'])} / {len(dataset['test'])}")
 
     # 2. Ön işleme
     print("\n[2/6] Ön işleme...")

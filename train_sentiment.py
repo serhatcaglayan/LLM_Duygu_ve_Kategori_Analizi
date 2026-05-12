@@ -72,6 +72,7 @@ def main():
     print("  DUYGU ANALİZİ EĞİTİMİ")
     print("=" * 60)
 
+    # Dictionary comprehension 
     label2id = {l: i for i, l in enumerate(SENTIMENT_LABELS)}
     id2label = {i: l for i, l in enumerate(SENTIMENT_LABELS)}
 
@@ -141,26 +142,26 @@ def main():
         per_device_train_batch_size=BATCH_SIZE,
         per_device_eval_batch_size=BATCH_SIZE,
         learning_rate=LEARNING_RATE,
-        weight_decay=0.01,
-        warmup_ratio=0.1,
-        eval_strategy="epoch",
-        save_strategy="epoch",
-        load_best_model_at_end=True,
-        metric_for_best_model="f1",
-        logging_steps=50,
-        seed=SEED,
-        report_to="none",
-        fp16=True,
+        weight_decay=0.01, # aşırı öğrenmeyi önler
+        warmup_ratio=0.1, # 10 %  eğitim verilerini artırır
+        eval_strategy="epoch", # her epoch sonunda değerlendir
+        save_strategy="epoch", # her epoch sonunda kaydet
+        load_best_model_at_end=True, # en iyi modeli yükler
+        metric_for_best_model="f1", # en iyi modeli seçmek için f1 kullan
+        logging_steps=50, # 50 adımda bir log tutar
+        seed=SEED, # rastgelelik tohumu
+        report_to="none", # raporlama 
+        fp16=True, # daha hızlı eğitim
     )
     trainer = Trainer(
-        model=model,
+        model=model, 
         args=args,
         train_dataset=tokenized["train"],
         eval_dataset=tokenized["test"],
         tokenizer=tokenizer,
-        data_collator=DataCollatorWithPadding(tokenizer),
-        compute_metrics=compute_metrics,
-        callbacks=[EarlyStoppingCallback(early_stopping_patience=2)],
+        data_collator=DataCollatorWithPadding(tokenizer), # batch boyutuna göre tokenları ayarlar
+        compute_metrics=compute_metrics, # metrikleri hesaplar
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=2)], # erken durdurma callback
     )
     trainer.train()
 

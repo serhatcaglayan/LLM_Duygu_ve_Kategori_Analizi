@@ -12,9 +12,8 @@ venv.bak/
 
 # Project-specific logs and data
 training_log.txt
-models/
-data/topic/
-data/sentiment/
+models/sentiment_model/model.safetensors
+models/topic_model/model.safetensors
 
 # Editor/IDE
 .vscode/

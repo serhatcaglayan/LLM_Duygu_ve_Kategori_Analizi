@@ -1,0 +1,20 @@
+{
+  "label2id": {
+    "kultursanat": 0,
+    "ekonomi": 1,
+    "siyaset": 2,
+    "egitim": 3,
+    "dunya": 4,
+    "spor": 5,
+    "teknoloji": 6
+  },
+  "id2label": {
+    "0": "kultursanat",
+    "1": "ekonomi",
+    "2": "siyaset",
+    "3": "egitim",
+    "4": "dunya",
+    "5": "spor",
+    "6": "teknoloji"
+  }
+}

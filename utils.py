@@ -15,9 +15,7 @@ import evaluate
 from sklearn.metrics import classification_report, confusion_matrix
 
 
-# ─────────────────────────────────────────────────────────────
 # 1. Metin Temizleme
-# ─────────────────────────────────────────────────────────────
 
 def clean_text(text: str) -> str:
  
@@ -38,7 +36,7 @@ def clean_text(text: str) -> str:
     return text
 
 
-
+# 2. Metrik Hesaplama
 
 accuracy_metric = evaluate.load("accuracy")
 f1_metric = evaluate.load("f1")
@@ -49,17 +47,17 @@ def compute_metrics(eval_pred):
     Trainer API'ye bağlanır.
     Hem accuracy hem de weighted F1 döner.
     """
-    logits, labels = eval_pred
-    predictions = np.argmax(logits, axis=-1)
+    logits, labels = eval_pred # logits : modelin tahminleri, labels : gerçek etiketler
+    predictions = np.argmax(logits, axis=-1) # en yüksek olasılıklı sınıfı seçer
 
-    acc = accuracy_metric.compute(predictions=predictions, references=labels)
+    acc = accuracy_metric.compute(predictions=predictions, references=labels) # accuracy hesaplar
     f1 = f1_metric.compute(
         predictions=predictions,
         references=labels,
         average="weighted"
     )
     return {
-        "accuracy": acc["accuracy"],
+        "accuracy": acc["accuracy"], 
         "f1": f1["f1"],
     }
 
@@ -78,7 +76,7 @@ def plot_confusion_matrix(y_true, y_pred, labels: list, save_path: str = None):
     cm = confusion_matrix(y_true, y_pred)
     fig, ax = plt.subplots(figsize=(max(6, len(labels)), max(5, len(labels) - 1)))
 
-    sns.heatmap(
+    sns.heatmap( 
         cm,
         annot=True,
         fmt="d",
@@ -113,20 +111,20 @@ def plot_training_history(trainer, save_path: str = None, title: str = "Training
         save_path: PNG kayıt yolu (None ise sadece gösterir)
         title    : Grafik başlığı
     """
-    log_history = trainer.state.log_history
+    log_history = trainer.state.log_history # log geçmişi
 
     train_losses, eval_losses = [], []
     train_epochs, eval_epochs = [], []
 
-    for entry in log_history:
-        if "loss" in entry and "eval_loss" not in entry:
-            train_losses.append(entry["loss"])
+    for entry in log_history: # log geçmişini döngüye al
+        if "loss" in entry and "eval_loss" not in entry: 
+            train_losses.append(entry["loss"]) 
             train_epochs.append(entry.get("epoch", len(train_losses)))
         if "eval_loss" in entry:
             eval_losses.append(entry["eval_loss"])
             eval_epochs.append(entry.get("epoch", len(eval_losses)))
 
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig, ax = plt.subplots(figsize=(8, 5)) 
     if train_losses:
         ax.plot(train_epochs, train_losses, label="Train Loss", marker="o", color="#2563EB")
     if eval_losses:
@@ -149,7 +147,7 @@ def plot_training_history(trainer, save_path: str = None, title: str = "Training
     return fig
 
 
-
+# 4. Sınıflandırma Raporu
 def save_classification_report(y_true, y_pred, labels: list, save_path: str):
     """
     sklearn classification_report'u hem konsola yazar hem JSON kaydeder.
@@ -171,8 +169,7 @@ def save_classification_report(y_true, y_pred, labels: list, save_path: str):
     return report_dict
 
 
-
-
+#5. Model Kaydetme
 def save_label_mapping(label2id: dict, id2label: dict, save_dir: str):
     """Label <-> ID eşlemesini JSON olarak kaydet."""
     os.makedirs(save_dir, exist_ok=True)
@@ -182,7 +179,7 @@ def save_label_mapping(label2id: dict, id2label: dict, save_dir: str):
         json.dump(mapping, f, ensure_ascii=False, indent=2)
     print(f"Label mapping kaydedildi: {path}")
 
-
+# 6. Label Mapping Yükleme
 def load_label_mapping(save_dir: str):
     """Kaydedilmiş label mapping'i yükle."""
     path = os.path.join(save_dir, "label_mapping.json")

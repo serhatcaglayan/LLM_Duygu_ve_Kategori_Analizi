@@ -79,13 +79,13 @@ SENTIMENT_MODEL_PATH = "models/sentiment_model"
 MAX_LENGTH           = 256
 
 
-@st.cache_resource(show_spinner=False)
+@st.cache_resource(show_spinner=False) 
 def load_model(model_path: str):
     """Model ve tokenizer'ı diskten yükle (bir kez çalışır)."""
     if not os.path.isdir(model_path):
         return None, None, None, None
 
-    # Label mapping
+    # Label mapping 
     mapping_path = os.path.join(model_path, "label_mapping.json")
     if os.path.exists(mapping_path):
         with open(mapping_path, "r", encoding="utf-8") as f:
@@ -104,12 +104,12 @@ def load_model(model_path: str):
 def predict(text: str, tokenizer, model, id2label: dict):
     """Tek metin için tahmin döndür."""
     inputs  = tokenizer(text, return_tensors="pt", truncation=True, max_length=MAX_LENGTH)
-    with torch.no_grad():
-        logits  = model(**inputs).logits
-    probs   = F.softmax(logits, dim=-1)[0]
-    pred_id = int(torch.argmax(probs))
-    label   = id2label.get(pred_id, str(pred_id))
-    confidence = float(probs[pred_id])
+    with torch.no_grad(): # eğitim yok sadece tahmin 
+        logits  = model(**inputs).logits 
+    probs   = F.softmax(logits, dim=-1)[0] # yüzdelere çevirir
+    pred_id = int(torch.argmax(probs)) # en yüksek olasılığa sahip sınıfın id'si
+    label   = id2label.get(pred_id, str(pred_id)) # id'ye karşılık gelen sınıf
+    confidence = float(probs[pred_id]) # güven skoru 
     # Tüm sınıf olasılıkları
     all_probs = {id2label.get(i, str(i)): float(p) for i, p in enumerate(probs)}
     return label, confidence, all_probs
